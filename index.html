@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KinCard</title>
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="KinCard">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--teal:#0f766e;--teal-d:#115e59;--bg:#f1f7f6;--card:#fff;--ink:#12302d;--mute:#4d6b67;--warn:#b45309;--warn-bg:#fef3c7;--red:#b91c1c;--red-bg:#fee2e2;--line:#d3e2e0;--fs:16px}
+*{box-sizing:border-box}
+body{margin:0;font:var(--fs)/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:84px}
+header{background:var(--teal);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:1.25em;margin:0}
+header small{opacity:.85;display:block;font-size:.75em}
+.hbtn{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-size:.9em;min-height:40px;margin-left:6px}
+main{padding:14px;max-width:640px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h2{font-size:1.1em;margin:0 0 8px}
+label{display:block;font-weight:600;margin:10px 0 4px;font-size:.9em}
+input,select,textarea{width:100%;font:inherit;padding:11px;border:1.5px solid #9db8b4;border-radius:10px;background:#fff;color:var(--ink);min-height:44px}
+input:focus,select:focus,button:focus-visible{outline:3px solid #5eead4;outline-offset:1px}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:10px;padding:12px 16px;font:inherit;font-weight:600;min-height:46px;width:100%;margin-top:12px}
+.btn.sec{background:#e2efed;color:var(--teal-d)}
+.btn.danger{background:var(--red-bg);color:var(--red)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item b{display:block}.item span{color:var(--mute);font-size:.9em}
+.x{background:none;border:0;color:var(--red);font-size:1.4em;min-width:44px;min-height:44px}
+.alert{border-radius:12px;padding:12px;margin-bottom:10px;font-size:.95em}
+.alert.w{background:var(--warn-bg);color:#78350f;border:1px solid #f59e0b}
+.alert.r{background:var(--red-bg);color:#7f1d1d;border:1px solid #f87171}
+.alert.i{background:#e0f2fe;color:#0c4a6e;border:1px solid #7dd3fc}
+.empty{color:var(--mute);text-align:center;padding:14px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;padding:10px 4px;font:inherit;font-size:.78em;color:var(--mute);min-height:56px}
+nav button[aria-current=page]{color:var(--teal);font-weight:700;border-top:3px solid var(--teal)}
+nav button i{display:block;font-style:normal;font-size:1.5em;line-height:1.1}
+#lock{position:fixed;inset:0;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px;z-index:10}
+#lock .box{max-width:340px;width:100%;text-align:center}
+#lock h1{margin:0 0 4px}
+#lock input{text-align:center;font-size:1.4em;letter-spacing:.3em;margin-top:14px}
+#lock .btn{background:#fff;color:var(--teal-d)}
+#lock .err{color:#fecaca;min-height:1.4em;margin-top:8px}
+#lock a{color:#ccfbf1;font-size:.85em;display:inline-block;margin-top:14px;padding:8px}
+.sum h3{margin:14px 0 4px;font-size:1em;color:var(--teal-d)}
+.sum table{width:100%;border-collapse:collapse;font-size:.9em}
+.sum td,.sum th{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
+.disc{font-size:.78em;color:var(--mute);margin-top:12px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#12302d;color:#fff;padding:10px 16px;border-radius:20px;font-size:.9em;z-index:20}
+@media print{header,nav,.noprint,.toast{display:none!important}body{background:#fff;padding:0}.card{border:0;padding:0}}
+</style>
+</head>
+<body>
+<div id="lock" role="dialog" aria-modal="true" aria-labelledby="lt">
+  <div class="box">
+    <h1 id="lt">KinCard</h1>
+    <p id="lsub">Your family health &amp; drug-gene card</p>
+    <form id="lf" autocomplete="off">
+      <input id="pin" type="password" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="12" aria-label="PIN" placeholder="PIN">
+      <input id="pin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" aria-label="Confirm PIN" placeholder="Confirm PIN" hidden>
+      <div class="err" id="lerr" role="alert"></div>
+      <button class="btn" id="lbtn" type="submit">Unlock</button>
+    </form>
+    <a href="#" id="forgot">Forgot PIN? Erase everything</a>
+  </div>
+</div>
+
+<header>
+  <div><h1>KinCard</h1><small>Data stays on this phone · encrypted</small></div>
+  <div><button class="hbtn" id="fs" aria-label="Increase text size">A+</button><button class="hbtn" id="lockbtn">Lock</button></div>
+</header>
+<main id="view"></main>
+<nav aria-label="Main">
+  <button data-t="family"><i>👪</i>Family</button>
+  <button data-t="meds"><i>💊</i>Meds</button>
+  <button data-t="genes"><i>🧬</i>Genes</button>
+  <button data-t="card"><i>📋</i>Doctor card</button>
+</nav>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const LS='kincard_v1';
+const enc=new TextEncoder(),dec=new TextDecoder();
+let key=null,data=null,tab='family';
+
+/* ---------- helpers ---------- */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const b64=b=>{let s='';new Uint8Array(b).forEach(x=>s+=String.fromCharCode(x));return btoa(s)};
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const uid=()=>Math.random().toString(36).slice(2,9);
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;t.setAttribute('role','status');document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+/* ---------- reference knowledge (educational, simplified) ---------- */
+const DEGREE={Mother:1,Father:1,Sister:1,Brother:1,Daughter:1,Son:1,'Grandmother':2,'Grandfather':2,Aunt:2,Uncle:2,'Half-sibling':2,Niece:2,Nephew:2,Cousin:3};
+const CONDITIONS=['Breast cancer','Ovarian cancer','Colon cancer','Prostate cancer','Heart attack / coronary disease','Stroke','Type 2 diabetes','Type 1 diabetes','High cholesterol (familial)','Sudden cardiac death','Alzheimer\'s / dementia','Thalassemia / sickle cell','Epilepsy','Asthma','Hypertension','Depression'];
+const EARLY=50; // flag onset below this age
+const GENES={
+ 'CYP2D6':{results:['Poor metabolizer','Ultrarapid metabolizer'],drugs:['codeine','tramadol'],msg:'Codeine/tramadol may be ineffective (poor) or cause toxicity (ultrarapid).'},
+ 'CYP2C19':{results:['Poor metabolizer'],drugs:['clopidogrel','plavix'],msg:'Clopidogrel may work less well; an alternative may be needed.'},
+ 'HLA-B*57:01':{results:['Positive'],drugs:['abacavir'],msg:'High risk of abacavir hypersensitivity reaction — avoid.'},
+ 'HLA-B*15:02':{results:['Positive'],drugs:['carbamazepine','oxcarbazepine','phenytoin'],msg:'Higher risk of severe skin reactions (SJS/TEN) with carbamazepine.'},
+ 'TPMT':{results:['Poor metabolizer','Intermediate metabolizer'],drugs:['azathioprine','mercaptopurine','6-mp','thioguanine'],msg:'Risk of severe bone-marrow toxicity; dose reduction needed.'},
+ 'DPYD':{results:['Variant (reduced function)'],drugs:['fluorouracil','5-fu','capecitabine'],msg:'Risk of severe toxicity; dose reduction or alternative needed.'}
+};
+
+/* ---------- crypto / storage ---------- */
+async function derive(pin,salt){
+  const m=await crypto.subtle.importKey('raw',enc.encode(pin),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function save(){
+  try{
+    const st=JSON.parse(localStorage.getItem(LS));
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(JSON.stringify(data)));
+    localStorage.setItem(LS,JSON.stringify({salt:st.salt,iv:b64(iv),ct:b64(ct)}));
+  }catch(e){toast('Could not save — storage may be full or blocked')}
+}
+async function unlock(pin){
+  const st=JSON.parse(localStorage.getItem(LS));
+  const k=await derive(pin,unb64(st.salt));
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(st.iv)},k,unb64(st.ct)); // throws if wrong PIN
+  key=k;data=JSON.parse(dec.decode(pt));
+}
+async function setup(pin){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  key=await derive(pin,salt);
+  data={me:{name:'',dob:''},family:[],meds:[],genes:[]};
+  localStorage.setItem(LS,JSON.stringify({salt:b64(salt)}));
+  await save();
+}
+
+/* ---------- lock screen ---------- */
+const isNew=()=>{try{const s=JSON.parse(localStorage.getItem(LS));return !s||!s.ct}catch(e){return true}};
+function showLock(){
+  key=null;data=null;
+  $('#lock').hidden=false;$('#view').innerHTML='';
+  const n=isNew();
+  $('#pin2').hidden=!n;$('#forgot').hidden=n;
+  $('#lbtn').textContent=n?'Create PIN':'Unlock';
+  $('#lsub').textContent=n?'Create a PIN (4–12 digits). It encrypts your data on this device. If you forget it, data cannot be recovered.':'Enter your PIN';
+  $('#pin').value='';$('#pin2').value='';$('#lerr').textContent='';
+}
+$('#lf').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const pin=$('#pin').value,err=$('#lerr');err.textContent='';
+  if(!window.crypto||!crypto.subtle){err.textContent='Secure mode needed: open the https link of the app.';return}
+  if(!/^\d{4,12}$/.test(pin)){err.textContent='PIN must be 4–12 digits.';return}
+  $('#lbtn').disabled=true;
+  try{
+    if(isNew()){
+      if(pin!==$('#pin2').value){err.textContent='PINs do not match.';return}
+      await setup(pin);
+    }else await unlock(pin);
+    $('#lock').hidden=true;render();
+  }catch(x){err.textContent=isNew()?'Setup failed.':'Wrong PIN. Try again.'}
+  finally{$('#lbtn').disabled=false}
+});
+$('#forgot').addEventListener('click',e=>{e.preventDefault();if(confirm('Erase ALL KinCard data on this device? This cannot be undone.')){localStorage.removeItem(LS);showLock()}});
+$('#lockbtn').onclick=showLock;
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&key)showLock()}); // auto-lock
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+function render(){
+  document.querySelectorAll('nav button').forEach(b=>b.toggleAttribute('aria-current',b.dataset.t===tab)||0);
+  document.querySelectorAll('nav button').forEach(b=>{if(b.dataset.t===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  if(!data)return;
+  ({family:vFamily,meds:vMeds,genes:vGenes,card:vCard})[tab]();
+  window.scrollTo(0,0);
+}
+
+/* ---------- analysis ---------- */
+function familyFlags(){
+  const flags=[];const by={};
+  data.family.forEach(r=>{const c=r.cond.trim().toLowerCase();(by[c]=by[c]||[]).push(r)});
+  Object.values(by).forEach(list=>{
+    const name=list[0].cond;
+    const first=new Set(list.filter(r=>DEGREE[r.who]===1).map(r=>r.who+'|'+r.name));
+    const all=new Set(list.map(r=>r.who+'|'+r.name));
+    if(first.size>=2)flags.push({t:'r',m:`<b>${esc(name)}</b>: ${first.size} first-degree relatives affected. Clustering like this is worth discussing with a doctor or genetic counsellor.`});
+    else if(all.size>=3)flags.push({t:'w',m:`<b>${esc(name)}</b>: ${all.size} relatives affected across the family.`});
+    list.forEach(r=>{if(r.age&&+r.age<EARLY)flags.push({t:'w',m:`<b>${esc(name)}</b> at age ${esc(r.age)} (${esc(r.who)}${r.name?' '+esc(r.name):''}): early onset (before ${EARLY}) can suggest an inherited pattern.`})});
+  });
+  return flags;
+}
+function drugGeneAlerts(){
+  const out=[];
+  data.genes.forEach(g=>{
+    const info=GENES[g.gene];if(!info||!info.results.includes(g.result))return;
+    data.meds.forEach(m=>{
+      const n=m.name.toLowerCase();
+      if(info.drugs.some(d=>n.includes(d)))out.push({t:'r',m:`<b>${esc(m.name)}</b> + <b>${esc(g.gene)}</b> (${esc(g.result)}): ${esc(info.msg)} Do not stop any medicine without asking your doctor or pharmacist.`});
+    });
+  });
+  return out;
+}
+const alertsHtml=a=>a.map(x=>`<div class="alert ${x.t}" role="alert">${x.m}</div>`).join('');
+
+/* ---------- views ---------- */
+function vFamily(){
+  const fl=familyFlags();
+  $('#view').innerHTML=`
+  ${fl.length?`<div class="card"><h2>Patterns to discuss</h2>${alertsHtml(fl)}<div class="disc">Rule-based screening only. Not a diagnosis.</div></div>`:''}
+  <div class="card"><h2>Add family history</h2>
+   <form id="ff">
+    <label for="who">Relative</label><select id="who">${Object.keys(DEGREE).map(k=>`<option>${k}</option>`).join('')}</select>
+    <label for="nm">Name or note (optional)</label><input id="nm" maxlength="40" placeholder="e.g. maternal side">
+    <label for="cd">Condition</label><input id="cd" list="cl" maxlength="60" required placeholder="Start typing…"><datalist id="cl">${CONDITIONS.map(c=>`<option>${esc(c)}`).join('')}</datalist>
+    <label for="ag">Age at diagnosis (optional)</label><input id="ag" type="number" inputmode="numeric" min="0" max="110">
+    <button class="btn" type="submit">Add</button>
+   </form></div>
+  <div class="card"><h2>Recorded (${data.family.length})</h2>${
+    data.family.length?data.family.map(r=>`<div class="item"><div><b>${esc(r.cond)}</b><span>${esc(r.who)}${r.name?' · '+esc(r.name):''}${r.age?' · age '+esc(r.age):''}</span></div><button class="x" data-del="${r.id}" aria-label="Delete entry">×</button></div>`).join(''):'<div class="empty">Nothing yet. Add a relative above.</div>'}</div>`;
+  $('#ff').onsubmit=async e=>{e.preventDefault();
+    const cond=$('#cd').value.trim(),age=$('#ag').value;
+    if(!cond)return toast('Enter a condition');
+    if(age&&(+age<0||+age>110))return toast('Age looks wrong');
+    data.family.push({id:uid(),who:$('#who').value,name:$('#nm').value.trim(),cond,age});
+    await save();render();toast('Added')};
+  delHandler('family');
+}
+function vMeds(){
+  const al=drugGeneAlerts();
+  $('#view').innerHTML=`
+  ${al.length?`<div class="card"><h2>⚠ Drug–gene alerts</h2>${alertsHtml(al)}</div>`:''}
+  <div class="card"><h2>Add medicine or allergy</h2>
+   <form id="mf">
+    <label for="mn">Name</label><input id="mn" maxlength="60" required placeholder="e.g. Codeine">
+    <label for="mt">Type</label><select id="mt"><option>Current medicine</option><option>Allergy / bad reaction</option></select>
+    <button class="btn" type="submit">Add</button>
+   </form></div>
+  <div class="card"><h2>List (${data.meds.length})</h2>${
+    data.meds.length?data.meds.map(m=>`<div class="item"><div><b>${esc(m.name)}</b><span>${esc(m.type)}</span></div><button class="x" data-del="${m.id}" aria-label="Delete">×</button></div>`).join(''):'<div class="empty">No medicines yet.</div>'}</div>`;
+  $('#mf').onsubmit=async e=>{e.preventDefault();
+    const name=$('#mn').value.trim();if(!name)return toast('Enter a name');
+    data.meds.push({id:uid(),name,type:$('#mt').value});await save();render();toast('Added')};
+  delHandler('meds');
+}
+function vGenes(){
+  const al=drugGeneAlerts();
+  $('#view').innerHTML=`
+  ${al.length?`<div class="card"><h2>⚠ Drug–gene alerts</h2>${alertsHtml(al)}</div>`:''}
+  <div class="card"><h2>Add a genetic test result</h2>
+   <p class="disc" style="margin-top:0">Only enter results from a real lab report.</p>
+   <form id="gf">
+    <label for="gg">Gene</label><select id="gg">${Object.keys(GENES).map(g=>`<option>${g}</option>`).join('')}</select>
+    <label for="gr">Result</label><select id="gr"></select>
+    <button class="btn" type="submit">Save result</button>
+   </form></div>
+  <div class="card"><h2>Your results (${data.genes.length})</h2>${
+    data.genes.length?data.genes.map(g=>`<div class="item"><div><b>${esc(g.gene)}</b><span>${esc(g.result)}</span></div><button class="x" data-del="${g.id}" aria-label="Delete">×</button></div>`).join(''):'<div class="empty">No results yet.</div>'}</div>
+  <div class="card"><h2>What KinCard checks</h2>${Object.entries(GENES).map(([g,i])=>`<div class="item"><div><b>${g}</b><span>${esc(i.drugs.slice(0,3).join(', '))}</span></div></div>`).join('')}</div>`;
+  const fill=()=>$('#gr').innerHTML=GENES[$('#gg').value].results.concat(['Normal / negative']).map(r=>`<option>${esc(r)}</option>`).join('');
+  fill();$('#gg').onchange=fill;
+  $('#gf').onsubmit=async e=>{e.preventDefault();
+    const gene=$('#gg').value;data.genes=data.genes.filter(g=>g.gene!==gene);
+    data.genes.push({id:uid(),gene,result:$('#gr').value});await save();render();toast('Saved')};
+  delHandler('genes');
+}
+function delHandler(k){
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Delete this entry?'))return;
+    data[k]=data[k].filter(x=>x.id!==b.dataset.del);await save();render()});
+}
+function cardText(){
+  const L=[`KINCARD — ${data.me.name||'Patient'}${data.me.dob?' (DOB '+data.me.dob+')':''}`,`Generated ${new Date().toLocaleDateString()}`,'','FAMILY HISTORY'];
+  data.family.forEach(r=>L.push(`- ${r.who}${r.name?' ('+r.name+')':''}: ${r.cond}${r.age?', age '+r.age:''}`));
+  L.push('','MEDICINES / ALLERGIES');data.meds.forEach(m=>L.push(`- ${m.name} [${m.type}]`));
+  L.push('','GENETIC RESULTS');data.genes.forEach(g=>L.push(`- ${g.gene}: ${g.result}`));
+  const a=drugGeneAlerts();if(a.length){L.push('','DRUG-GENE ALERTS');a.forEach(x=>L.push('- '+x.m.replace(/<[^>]+>/g,'')))}
+  L.push('','Self-reported; not a diagnosis.');return L.join('\n');
+}
+function vCard(){
+  const fl=familyFlags(),al=drugGeneAlerts();
+  $('#view').innerHTML=`
+  <div class="card noprint"><h2>About you</h2>
+   <label for="mn1">Name</label><input id="mn1" maxlength="60" value="${esc(data.me.name)}">
+   <label for="md">Date of birth</label><input id="md" type="date" value="${esc(data.me.dob)}">
+   <div class="row"><button class="btn sec" id="sv">Save</button></div></div>
+  <div class="card sum" id="sumc">
+   <h2>KinCard — ${esc(data.me.name||'Patient')}</h2>
+   <div>${data.me.dob?'DOB: '+esc(data.me.dob)+' · ':''}Generated ${new Date().toLocaleDateString()}</div>
+   ${al.length?`<h3>Drug–gene alerts</h3>${alertsHtml(al)}`:''}
+   ${fl.length?`<h3>Family patterns</h3>${alertsHtml(fl)}`:''}
+   <h3>Family history</h3>${data.family.length?`<table><tr><th>Relative</th><th>Condition</th><th>Age</th></tr>${data.family.map(r=>`<tr><td>${esc(r.who)}${r.name?' ('+esc(r.name)+')':''}</td><td>${esc(r.cond)}</td><td>${esc(r.age||'—')}</td></tr>`).join('')}</table>`:'<div class="empty">None recorded</div>'}
+   <h3>Medicines &amp; allergies</h3>${data.meds.length?data.meds.map(m=>`<div>${esc(m.name)} <span style="color:var(--mute)">· ${esc(m.type)}</span></div>`).join(''):'<div class="empty">None recorded</div>'}
+   <h3>Genetic results</h3>${data.genes.length?data.genes.map(g=>`<div>${esc(g.gene)}: ${esc(g.result)}</div>`).join(''):'<div class="empty">None recorded</div>'}
+   <div class="disc">Self-reported information for discussion with a clinician. Not a diagnosis or medical advice.</div></div>
+  <div class="noprint">
+   <button class="btn" id="pr">Print / save as PDF</button>
+   <button class="btn sec" id="cp">Share or copy as text</button>
+   <button class="btn danger" id="er">Erase all my data</button></div>`;
+  $('#sv').onclick=async()=>{data.me.name=$('#mn1').value.trim();data.me.dob=$('#md').value;await save();render();toast('Saved')};
+  $('#pr').onclick=()=>window.print();
+  $('#cp').onclick=async()=>{const t=cardText();
+    try{if(navigator.share){await navigator.share({title:'KinCard',text:t})}else{await navigator.clipboard.writeText(t);toast('Copied')}}
+    catch(e){if(e.name!=='AbortError')toast('Could not share')}};
+  $('#er').onclick=()=>{if(confirm('Erase ALL data permanently?')){localStorage.removeItem(LS);showLock()}};
+}
+
+/* ---------- text size ---------- */
+let fs=+(localStorage.getItem('kc_fs')||16);
+const applyFs=()=>document.documentElement.style.setProperty('--fs',fs+'px');
+applyFs();
+$('#fs').onclick=()=>{fs=fs>=22?16:fs+2;localStorage.setItem('kc_fs',fs);applyFs()};
+
+/* ---------- start ---------- */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+showLock();
+</script>
+</body>
+</html>
